@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arch-Sync | 개인용 대시보드</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Arch-Sync</h1>
+            <nav class="nav">
+                <button class="nav-btn active" data-view="dashboard"><i class="fas fa-home"></i> 대시보드</button>
+                <button class="nav-btn" data-view="tasks"><i class="fas fa-tasks"></i> 할 일</button>
+                <button class="nav-btn" data-view="resources"><i class="fas fa-link"></i> 리소스</button>
+                <button class="nav-btn" data-view="feeds"><i class="fas fa-sticky-note"></i> 피드백</button>
+                <button class="nav-btn" data-view="events"><i class="fas fa-calendar-alt"></i> 일정</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- 대시보드 뷰 -->
+            <section id="dashboard-view" class="view active">
+                <h2 class="section-title">대시보드</h2>
+                
+                <div class="dashboard-grid">
+                    <!-- 오늘 내가 할 일 -->
+                    <div class="dashboard-card dashboard-calendar-card">
+                        <h3><i class="fas fa-check-circle"></i> 오늘 내가 할 일</h3>
+                        <div id="today-tasks" class="tasks-list">
+                            <p class="empty-message">오늘 할 일이 없습니다.</p>
+                        </div>
+                    </div>
+
+                    <!-- 최근 내 메모/피드백 -->
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-file-alt"></i> 최근 내 메모/피드백</h3>
+                        <div id="recent-feeds" class="feeds-list">
+                            <p class="empty-message">메모가 없습니다.</p>
+                        </div>
+                    </div>
+
+                    <!-- 달력 -->
+                    <div class="dashboard-card dashboard-calendar-card">
+                        <div class="calendar-header">
+                            <h3><i class="fas fa-calendar"></i> 일정 달력</h3>
+                            <div class="calendar-nav-small">
+                                <button class="btn-icon" onclick="changeCalendarMonth(-1)" title="이전 달"><i class="fas fa-chevron-left"></i></button>
+                                <span id="dashboard-calendar-month-year" class="calendar-month-year"></span>
+                                <button class="btn-icon" onclick="changeCalendarMonth(1)" title="다음 달"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div id="dashboard-calendar-container" class="dashboard-calendar-container">
+                            <div class="calendar-weekdays-small">
+                                <div class="calendar-weekday-small">일</div>
+                                <div class="calendar-weekday-small">월</div>
+                                <div class="calendar-weekday-small">화</div>
+                                <div class="calendar-weekday-small">수</div>
+                                <div class="calendar-weekday-small">목</div>
+                                <div class="calendar-weekday-small">금</div>
+                                <div class="calendar-weekday-small">토</div>
+                            </div>
+                            <div id="dashboard-calendar-days" class="dashboard-calendar-days"></div>
+                        </div>
+                    </div>
+
+                    <!-- 다가오는 중요 일정 -->
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-clock"></i> 다가오는 중요 일정</h3>
+                        <div id="upcoming-events" class="events-list">
+                            <p class="empty-message">일정이 없습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 할 일 관리 뷰 (칸반) -->
+            <section id="tasks-view" class="view">
+                <div class="view-header">
+                    <h2 class="section-title"><i class="fas fa-tasks"></i> 할 일 관리</h2>
+                    <button class="btn btn-primary" onclick="openTaskModal()"><i class="fas fa-plus"></i> 할 일 추가</button>
+                </div>
+
+                <div class="kanban-board">
+                    <div class="kanban-column" data-status="대기">
+                        <h3 class="column-title"><i class="far fa-clock"></i> 대기</h3>
+                        <div class="task-list" id="tasks-대기"></div>
+                    </div>
+                    <div class="kanban-column" data-status="진행중">
+                        <h3 class="column-title"><i class="fas fa-spinner"></i> 진행 중</h3>
+                        <div class="task-list" id="tasks-진행중"></div>
+                    </div>
+                    <div class="kanban-column" data-status="완료">
+                        <h3 class="column-title"><i class="fas fa-check"></i> 완료</h3>
+                        <div class="task-list" id="tasks-완료"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 리소스 아카이브 뷰 -->
+            <section id="resources-view" class="view">
+                <div class="view-header">
+                    <h2 class="section-title"><i class="fas fa-link"></i> 리소스 아카이브</h2>
+                    <button class="btn btn-primary" onclick="openResourceModal()"><i class="fas fa-plus"></i> 링크 추가</button>
+                </div>
+
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-category="all"><i class="fas fa-th"></i> 전체</button>
+                    <button class="filter-btn" data-category="도면 링크"><i class="fas fa-drafting-compass"></i> 도면 링크</button>
+                    <button class="filter-btn" data-category="패널 링크"><i class="fas fa-image"></i> 패널 링크</button>
+                    <button class="filter-btn" data-category="리서치 사이트"><i class="fas fa-search"></i> 리서치 사이트</button>
+                </div>
+
+                <div id="resources-list" class="resources-list">
+                    <p class="empty-message">리소스가 없습니다.</p>
+                </div>
+            </section>
+
+            <!-- 피드백 노트 뷰 -->
+            <section id="feeds-view" class="view">
+                <div class="view-header">
+                    <h2 class="section-title"><i class="fas fa-sticky-note"></i> 공지 및 피드백 노트</h2>
+                    <button class="btn btn-primary" onclick="openFeedModal()"><i class="fas fa-plus"></i> 메모 추가</button>
+                </div>
+
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-type="all"><i class="fas fa-th"></i> 전체</button>
+                    <button class="filter-btn" data-type="피드백"><i class="fas fa-comment-dots"></i> 피드백</button>
+                    <button class="filter-btn" data-type="회의록"><i class="fas fa-users"></i> 회의록</button>
+                    <button class="filter-btn" data-type="아이디어"><i class="fas fa-lightbulb"></i> 아이디어</button>
+                </div>
+
+                <div id="feeds-list" class="feeds-list-view">
+                    <p class="empty-message">메모가 없습니다.</p>
+                </div>
+            </section>
+
+            <!-- 일정 관리 뷰 -->
+            <section id="events-view" class="view">
+                <div class="view-header">
+                    <h2 class="section-title"><i class="fas fa-calendar-alt"></i> 일정 관리</h2>
+                    <button class="btn btn-primary" onclick="openEventModal()"><i class="fas fa-plus"></i> 일정 추가</button>
+                </div>
+
+                <div id="events-list" class="events-list-view">
+                    <p class="empty-message">일정이 없습니다.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 모달: 할 일 추가/수정 -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTaskModal()">&times;</span>
+            <h3 id="task-modal-title"><i class="fas fa-tasks"></i> 할 일 추가</h3>
+            <form id="task-form" onsubmit="saveTask(event)">
+                <input type="hidden" id="task-id" name="id">
+                <div class="form-group">
+                    <label for="task-name">할 일 이름</label>
+                    <input type="text" id="task-name" name="taskName" required>
+                </div>
+                <div class="form-group">
+                    <label for="task-assignee">담당자 (메모용)</label>
+                    <input type="text" id="task-assignee" name="assigneeName" placeholder="예: 이철민">
+                </div>
+                <div class="form-group">
+                    <label for="task-status">상태</label>
+                    <select id="task-status" name="status" required>
+                        <option value="대기">대기</option>
+                        <option value="진행중">진행 중</option>
+                        <option value="완료">완료</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="task-due-date">마감일</label>
+                    <input type="date" id="task-due-date" name="dueDate">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 모달: 리소스 추가/수정 -->
+    <div id="resource-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeResourceModal()">&times;</span>
+            <h3 id="resource-modal-title"><i class="fas fa-link"></i> 링크 추가</h3>
+            <form id="resource-form" onsubmit="saveResource(event)">
+                <input type="hidden" id="resource-id" name="id">
+                <div class="form-group">
+                    <label for="resource-name">리소스 이름</label>
+                    <input type="text" id="resource-name" name="resourceName" required>
+                </div>
+                <div class="form-group">
+                    <label for="resource-url">URL</label>
+                    <input type="url" id="resource-url" name="url" required placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label for="resource-category">카테고리</label>
+                    <select id="resource-category" name="category" required>
+                        <option value="도면 링크">도면 링크</option>
+                        <option value="패널 링크">패널 링크</option>
+                        <option value="리서치 사이트">리서치 사이트</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="resource-registrant">등록자 (메모용)</label>
+                    <input type="text" id="resource-registrant" name="registrant" placeholder="예: 김지수">
+                </div>
+                <div class="form-group">
+                    <label for="resource-version">버전</label>
+                    <input type="text" id="resource-version" name="version" placeholder="예: v3">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeResourceModal()">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 모달: 피드백 추가/수정 -->
+    <div id="feed-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeFeedModal()">&times;</span>
+            <h3 id="feed-modal-title"><i class="fas fa-sticky-note"></i> 메모 추가</h3>
+            <form id="feed-form" onsubmit="saveFeed(event)">
+                <input type="hidden" id="feed-id" name="id">
+                <div class="form-group">
+                    <label for="feed-title">제목</label>
+                    <input type="text" id="feed-title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="feed-content">내용</label>
+                    <textarea id="feed-content" name="content" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="feed-type">유형</label>
+                    <select id="feed-type" name="type" required>
+                        <option value="피드백">피드백</option>
+                        <option value="회의록">회의록</option>
+                        <option value="아이디어">아이디어</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="feed-author">작성자 (메모용)</label>
+                    <input type="text" id="feed-author" name="authorName" placeholder="예: 김지수">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeFeedModal()">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 모달: 일정 추가/수정 -->
+    <div id="event-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEventModal()">&times;</span>
+            <h3 id="event-modal-title"><i class="fas fa-calendar-alt"></i> 일정 추가</h3>
+            <form id="event-form" onsubmit="saveEvent(event)">
+                <input type="hidden" id="event-id" name="id">
+                <div class="form-group">
+                    <label for="event-name">일정 이름</label>
+                    <input type="text" id="event-name" name="eventName" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-date">날짜</label>
+                    <input type="date" id="event-date" name="date" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEventModal()">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
